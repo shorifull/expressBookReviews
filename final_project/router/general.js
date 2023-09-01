@@ -24,7 +24,6 @@ public_users.post("/register", (req,res) => {
   const username = req.body.username;
   const password = req.body.password;
 
-
   if (username && password) {
     if (!doesExist(username)) { 
       users.push({"username":username,"password":password});
@@ -50,9 +49,27 @@ public_users.get('/',function (req, res) {
 
   )
 
-
-  // return res.status(300).json({message: "Yet to be implemented"});
 });
+
+
+// Get the book list available in the shop using async await
+
+public_users.get('/async', async function(req, res) {
+  try {
+    const bookList = await new Promise((resolve, reject) => {
+      setTimeout(() => { // Simulating async operation like fetching from database
+        resolve(books);
+      }, 1000);
+    });
+
+    res.send(JSON.stringify(bookList, null, 4));
+  } catch (error) {
+    res.send("denied");
+  }
+});
+
+
+
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
@@ -62,6 +79,40 @@ public_users.get('/isbn/:isbn',function (req, res) {
   res.send(books[ISBN]);
  });
   
+
+
+
+// Get book details based on ISBN using  Promise
+
+public_users.get('/isbn/promise/:isbn', function(req, res) {
+  const ISBN = req.params.isbn;
+
+  const fetchBooksUsingPromise = (isbn) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => { 
+        const fetchedBooks = books[isbn];
+        if (fetchedBooks) {
+          resolve(fetchedBooks);
+        } else {
+          reject(new Error('Book not found'));
+        }
+      }, 1000);
+    });
+  };
+
+  fetchBooksUsingPromise(ISBN)
+    .then((fetchedBooks) => {
+      res.send(fetchedBooks);
+    })
+    .catch((error) => {
+      res.status(404).send('Book not found');
+    });
+});
+
+
+
+
+
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
